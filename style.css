@@ -39,8 +39,9 @@ img.cardBack {
   height: 100%;
   position: absolute;
   transform: rotateY(180deg);
+  object-fit: cover;
 }
 
-.fliped {
+.flipped {
   transform: rotateY(180deg);
 }

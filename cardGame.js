@@ -1,5 +1,5 @@
-// create div for cards
-// let cards = [];
+// Create div for cards
+
 createCards();
 function createCards() {
   let cardContainer = document.getElementById("cardContainer");
@@ -10,78 +10,92 @@ function createCards() {
     cardContainer.appendChild(card);
     card.appendChild(cardFront);
     card.appendChild(cardBack);
-    // cards.push(card);
     card.classList = "card";
     cardFront.classList = "cardFront";
     cardBack.classList = "cardBack";
   }
 }
-// randomize images
+
+// Randomize images
 randomizeCard();
 function randomizeCard() {
   let images = ["dog1", "dog2", "dog3", "dog4", "dog5", "dog6", "dog7", "dog8"];
   let imageList = images.concat(images);
   let randomziedImages = imageList.sort(() => Math.random() - 0.5);
 
-  // randomzied images to the HTML
-  let cardBack = document.querySelectorAll(".cardBack");
-  cardBack.forEach((each, index) =>
+  // Randomzied images to the HTML
+  let cardsBack = document.querySelectorAll(".cardBack");
+  cardsBack.forEach((each, index) =>
     each.setAttribute("src", `/images/${randomziedImages[index]}.jpg`)
   );
 }
 
-//when card is clicked, flip
-let card = document.querySelectorAll(".card");
-gameStartByclick();
-function gameStartByclick() {
-  card.forEach((each) => each.addEventListener("click", filpCards));
-}
+//When card is clicked, the card is flipped
+let cards = document.querySelectorAll(".card");
+cards.forEach((card) => card.addEventListener("click", () => filpCard(card)));
 
-let firstCard, secondCard;
-let anyClicked = true;
+/* one round => 1+2+3
+1. the first card flipped & the second card filped
+2. check both are matched or not
+3. if they are matched -> stay, if not -> filped again 
+*/
+let firstCard;
+let matchCards = [];
 
-function filpCards() {
-  this.classList.add("fliped");
+function filpCard(currentCard) {
+  if (matchCards.includes(currentCard)) return;
 
-  if (!anyClicked) {
-    secondCard = this;
-    anyClicked = true;
+  currentCard.classList.add("flipped");
+
+  // 1.
+  if (firstCard === undefined) {
+    firstCard = currentCard;
+    return;
+  }
+
+  const isMatch =
+    firstCard.childNodes[1].getAttribute("src") ===
+    currentCard.childNodes[1].getAttribute("src");
+
+  // 2.
+  if (isMatch) {
+    matchCards.push(firstCard);
+    matchCards.push(currentCard);
+    checkIfWon();
+    console.log(matchCards);
   } else {
-    firstCard = this;
-    anyClicked = false;
+    // 3.
+    flipCardAfterTimeout(firstCard);
+    flipCardAfterTimeout(currentCard);
   }
-  // console.log(firstCard);
-  // console.log(secondCard);
-  if (
-    secondCard.childNodes[1].getAttribute("src") ===
-    firstCard.childNodes[1].getAttribute("src")
-  ) {
-    // firstCard.removeEventListener("click", filpCards);
-    // secondCard.removeEventListener("click", filpCards);
-  } else {
-    setTimeout(() => {
-      firstCard.classList.remove("fliped");
-      secondCard.classList.remove("fliped");
-      console.log("diff");
-    }, 1500);
-  }
-  checkFlipedCards();
+
+  firstCard = undefined;
 }
 
-// when all the cards are fliped, show scores and then re-randomize cards
-function checkFlipedCards() {
-  cardArray = Array.from(card);
-  /* Nodelist and array is not the same! -> how to convert nodelist to array*/
-  let IsAllFliped = cardArray.every((el) => el.className === "card fliped");
-  if (IsAllFliped == true) {
-    setTimeout(AskforReplay, 3000);
+function flipCardAfterTimeout(card) {
+  setTimeout(() => {
+    if (matchCards.includes(card)) return;
+    card.classList.remove("flipped");
+  }, 1000);
+}
+
+// Check if all cards are matched
+function checkIfWon() {
+  if (matchCards.length === 16) {
+    setTimeout(AskforReplay, 1000);
   }
 }
 
-const AskforReplay = function () {
+function resetState() {
+  firstCard = undefined;
+  matchCards = [];
+}
+
+// Re-start if user wants.
+function AskforReplay() {
   if (confirm("Do you want to play game again?") == true) {
-    card.forEach((each) => each.classList.remove("fliped"));
+    cards.forEach((each) => each.classList.remove("flipped"));
     randomizeCard();
-    gameStartByclick();
+    resetState();
   }
-};
+}
